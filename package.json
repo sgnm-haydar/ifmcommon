@@ -1,11 +1,16 @@
 {
   "name": "ifmcommon",
-  "version": "0.0.12",
+  "version": "0.0.14",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
   "author": "",
+  "keywords": ["nestJs","interceptor","exception filter","nest"],
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sgnm-haydar/ifmcommon"
+  },
   "scripts": {
     "build": "tsc",
     "test": "jest"
