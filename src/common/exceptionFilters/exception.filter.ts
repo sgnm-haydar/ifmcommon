@@ -54,6 +54,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
       exception,
       ExceptionType.HTTP_EXCEPTİON,
     );
+    console.log('exception is ' + exception);
+    console.log('exception.getStatus  is ' + exception.getStatus());
+    console.log('exception.getResponse  is ' + exception.getResponse());
 
     switch (exception.getStatus()) {
       case 400:
@@ -115,7 +118,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         const result: any = exception.getResponse();
         try {
           let message = '';
-          if (result.key) {
+          if (result?.key) {
             message = await this.i18n.translate(result.key, {
               lang: ctx.getRequest().i18nLang,
               args: result.args,
@@ -136,27 +139,71 @@ export class HttpExceptionFilter implements ExceptionFilter {
           this.logger.error(`${JSON.stringify(error)}   `);
         }
         break;
+      case 500:
+        try {
+          const message = 'something goes wrong';
 
-      default:
-        let message = '';
-        if (result.key) {
-          message = await this.i18n.translate(result.key, {
-            lang: ctx.getRequest().i18nLang,
-            args: result.args,
-          });
+          const clientResponse = { status, message };
+          const finalExcep = {
+            reqResObject,
+            clientResponse,
+          };
+          await this.postKafka.producerSendMessage(
+            this.exceptionTopic,
+            JSON.stringify(finalExcep),
+          );
+          this.logger.error(`${JSON.stringify(exception.message)}   `);
+          response.status(status).json(exception.message);
+          break;
+        } catch (error) {
+          const clientResponse = { status, error };
+          const finalExcep = {
+            reqResObject,
+            clientResponse,
+          };
+          await this.postKafka.producerSendMessage(
+            this.exceptionTopic,
+            JSON.stringify(finalExcep),
+          );
+          this.logger.error(`${JSON.stringify(exception.message)}   `);
+          response.status(status).json(exception.message);
+          break;
         }
-        const clientResponse = { status, message };
-        const finalExcep = {
-          reqResObject,
-          clientResponse,
-        };
-        await this.postKafka.producerSendMessage(
-          this.exceptionTopic,
-          JSON.stringify(finalExcep),
-        );
-        this.logger.error(`${JSON.stringify(exception.message)}   `);
-        response.status(status).json(exception.message);
-        break;
+      default:
+        try {
+          let message = 'something goes wrong';
+          if (result?.key) {
+            message = await this.i18n.translate(result.key, {
+              lang: ctx.getRequest().i18nLang,
+              args: result.args,
+            });
+          }
+          const clientResponse = { status, message };
+          const finalExcep = {
+            reqResObject,
+            clientResponse,
+          };
+          await this.postKafka.producerSendMessage(
+            this.exceptionTopic,
+            JSON.stringify(finalExcep),
+          );
+          this.logger.error(`${JSON.stringify(exception.message)}   `);
+          response.status(status).json(exception.message);
+          break;
+        } catch (error) {
+          const clientResponse = { status, error };
+          const finalExcep = {
+            reqResObject,
+            clientResponse,
+          };
+          await this.postKafka.producerSendMessage(
+            this.exceptionTopic,
+            JSON.stringify(finalExcep),
+          );
+          this.logger.error(`${JSON.stringify(exception.message)}   `);
+          response.status(status).json(exception.message);
+          break;
+        }
     }
   }
 }

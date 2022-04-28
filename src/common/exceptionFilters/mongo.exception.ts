@@ -40,7 +40,7 @@ export class MongoExceptionFilter implements ExceptionFilter {
 
     console.log('--------This error from MONGO EXCEPTİON FİLTER-----------');
     const exceptionMessage = exception.errmsg;
-    console.log(exceptionMessage);
+    console.log(exception);
 
     const errorType = ExceptionType.MONGO_EXCEPTİON;
     const requestInformation = {
@@ -58,7 +58,7 @@ export class MongoExceptionFilter implements ExceptionFilter {
       message: exception.message,
     };
     const reqResObject = { requestInformation, errorResponseLog, errorType };
-    console.log(exceptionMessage);
+
     //give response due to mongo exception code
     switch (exception.code) {
       case 112: // write conflict (when a transaction is failed)
