@@ -21,11 +21,7 @@ export class MongoExceptionFilter implements ExceptionFilter {
   /**
    * inject i18nService
    */
-  constructor(
-    private readonly i18n: I18nService,
-    kafkaConfig: KafkaConfig,
-    exceptionTopic,
-  ) {
+  constructor(private readonly i18n, kafkaConfig: KafkaConfig, exceptionTopic) {
     this.postKafka = new PostKafka(new KafkaService(kafkaConfig));
     this.exceptionTopic = exceptionTopic;
   }
