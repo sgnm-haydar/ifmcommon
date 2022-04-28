@@ -11,7 +11,6 @@ import { Response } from 'express';
 import { I18NEnums } from '../const/i18n.enum';
 import { KafkaService } from '../queueService/kafkaService';
 import { PostKafka } from '../queueService/post-kafka';
-import { Topics } from '../const/kafta.topic.enum';
 import { ExceptionType } from '../const/exception.type';
 import { createExceptionReqResLogObj } from '../func/generate.exception.logobject';
 import { KafkaConfig } from 'kafkajs';
@@ -26,17 +25,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
    */
   postKafka: PostKafka;
 
-  topic;
+  exceptionTopic;
   /**
    * inject i18nService
    */
-  constructor(
-    private readonly i18n,
-    kafkaConfig: KafkaConfig,
-    topic,
-  ) {
+  constructor(private readonly i18n, kafkaConfig: KafkaConfig, exceptionTopic) {
     this.postKafka = new PostKafka(new KafkaService(kafkaConfig));
-    this.topic = topic;
+    this.exceptionTopic = exceptionTopic;
   }
   /**
    * Log from Logger
@@ -68,7 +63,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
             clientResponse: exception.getResponse(),
           };
           await this.postKafka.producerSendMessage(
-            this.topic,
+            this.exceptionTopic,
             JSON.stringify(finalExcep),
           );
           this.logger.warn(`${JSON.stringify(finalExcep)}   `);
@@ -86,7 +81,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
             clientResponse,
           };
           await this.postKafka.producerSendMessage(
-            this.topic,
+            this.exceptionTopic,
             JSON.stringify(finalExcep),
           );
           console.log(`USER_EXCEPTION sending to topic from code 401`);
@@ -105,7 +100,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
             clientResponse,
           };
           await this.postKafka.producerSendMessage(
-            this.topic,
+            this.exceptionTopic,
             JSON.stringify(finalExcep),
           );
           this.logger.warn(`${JSON.stringify(finalExcep)}   `);
@@ -132,7 +127,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
             clientResponse,
           };
           await this.postKafka.producerSendMessage(
-            this.topic,
+            this.exceptionTopic,
             JSON.stringify(finalExcep),
           );
           this.logger.warn(`${JSON.stringify(finalExcep)}   `);
@@ -156,7 +151,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
           clientResponse,
         };
         await this.postKafka.producerSendMessage(
-          this.topic,
+          this.exceptionTopic,
           JSON.stringify(finalExcep),
         );
         this.logger.error(`${JSON.stringify(exception.message)}   `);

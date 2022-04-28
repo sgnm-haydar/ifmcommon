@@ -4,8 +4,6 @@ import { MongoError } from 'mongodb';
 import { I18nService } from 'nestjs-i18n';
 import { ExceptionType } from '../const/exception.type';
 import { I18NEnums } from '../const/i18n.enum';
-import { Topics } from '../const/kafta.topic.enum';
-import { createExceptionReqResLogObj } from '../func/generate.exception.logobject';
 import { KafkaService } from '../queueService/kafkaService';
 import { PostKafka } from '../queueService/post-kafka';
 
@@ -18,17 +16,18 @@ export class MongoExceptionFilter implements ExceptionFilter {
    * create variable for postKafka Service
    */
   postKafka: PostKafka;
+
+  exceptionTopic;
   /**
    * inject i18nService
    */
-  topic;
   constructor(
-    private readonly i18n,
+    private readonly i18n: I18nService,
     kafkaConfig: KafkaConfig,
-    topic,
+    exceptionTopic,
   ) {
     this.postKafka = new PostKafka(new KafkaService(kafkaConfig));
-    this.topic = topic;
+    this.exceptionTopic = exceptionTopic;
   }
   /**
    * Log from Logger
@@ -45,14 +44,25 @@ export class MongoExceptionFilter implements ExceptionFilter {
 
     console.log('--------This error from MONGO EXCEPTİON FİLTER-----------');
     const exceptionMessage = exception.errmsg;
-    const errorProperties = exceptionMessage.match(/\{.*\}/)[0];
+    console.log(exceptionMessage);
 
-    const reqResObject = createExceptionReqResLogObj(
-      request,
-      exception,
-      ExceptionType.MONGO_EXCEPTİON,
-    );
+    const errorType = ExceptionType.MONGO_EXCEPTİON;
+    const requestInformation = {
+      timestamp: new Date(),
+      user: request.user || {},
+      path: request.url,
+      method: request.method,
+      body: request.body,
+    };
 
+    const errorResponseLog = {
+      timestamp: new Date().toLocaleDateString(),
+      path: request.url,
+      method: request.method,
+      message: exception.message,
+    };
+    const reqResObject = { requestInformation, errorResponseLog, errorType };
+    console.log(exceptionMessage);
     //give response due to mongo exception code
     switch (exception.code) {
       case 112: // write conflict (when a transaction is failed)
@@ -62,6 +72,7 @@ export class MongoExceptionFilter implements ExceptionFilter {
         response.status(500).json({ code: 500, message: 'Server down' });
         break;
       case 11000: // duplicate exceptio
+        const errorProperties = exceptionMessage.match(/\{.*\}/)[0];
         const message = await getI18nMongoErrorMessage(
           this.i18n,
           request,
@@ -79,7 +90,7 @@ export class MongoExceptionFilter implements ExceptionFilter {
         };
         try {
           await this.postKafka.producerSendMessage(
-            this.topic,
+            this.exceptionTopic,
             JSON.stringify(finalExcep),
           );
           this.logger.warn(`${JSON.stringify(finalExcep)}   `);

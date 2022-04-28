@@ -7,7 +7,6 @@ import {
 import { KafkaConfig } from 'kafkajs';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { Topics } from '../const/kafta.topic.enum';
 import { createReqLogObj } from '../func/generate.log.object';
 import { checkObjectIddİsValid } from '../func/objectId.check';
 import { KafkaService } from '../queueService/kafkaService';

@@ -11,9 +11,6 @@ export class KafkaService implements IQueueService {
     this.kafkaOptions = kafkaOptions;
     this.kafka = new Kafka(this.kafkaOptions);
   }
-  /**
-   * Create Kafka Client
-   */
 
   /**
    *  Create Kafka Producer

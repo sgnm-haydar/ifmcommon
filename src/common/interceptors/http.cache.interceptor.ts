@@ -1,4 +1,9 @@
-import { Injectable, CacheInterceptor, ExecutionContext, CACHE_KEY_METADATA } from '@nestjs/common';
+import {
+  Injectable,
+  CacheInterceptor,
+  ExecutionContext,
+  CACHE_KEY_METADATA,
+} from '@nestjs/common';
 
 import { SetMetadata } from '@nestjs/common';
 
@@ -31,13 +36,19 @@ export class HttpCacheInterceptor extends CacheInterceptor {
     }
     const { httpAdapter } = this.httpAdapterHost;
     const isHttpApp = httpAdapter && !!httpAdapter.getRequestMethod;
-    const cacheMetadata = this.reflector.get(CACHE_KEY_METADATA, context.getHandler());
+    const cacheMetadata = this.reflector.get(
+      CACHE_KEY_METADATA,
+      context.getHandler(),
+    );
 
     if (!isHttpApp || cacheMetadata) {
       return cacheMetadata;
     }
     //this function check the get method will be cached or not
-    const ignoreCaching: boolean = this.reflector.get('ignoreCaching', context.getHandler());
+    const ignoreCaching: boolean = this.reflector.get(
+      'ignoreCaching',
+      context.getHandler(),
+    );
     if (ignoreCaching) {
       return undefined;
     }
@@ -55,8 +66,14 @@ export class HttpCacheInterceptor extends CacheInterceptor {
     }
     // to always get the base url of the incoming get request url.
     const key = httpAdapter.getRequestUrl(request).split('?')[0];
-    if (this.cachedRoutes.has(key) && !this.cachedRoutes.get(key).includes(httpAdapter.getRequestUrl(request))) {
-      this.cachedRoutes.set(key, [...this.cachedRoutes.get(key), httpAdapter.getRequestUrl(request)]);
+    if (
+      this.cachedRoutes.has(key) &&
+      !this.cachedRoutes.get(key).includes(httpAdapter.getRequestUrl(request))
+    ) {
+      this.cachedRoutes.set(key, [
+        ...this.cachedRoutes.get(key),
+        httpAdapter.getRequestUrl(request),
+      ]);
       return httpAdapter.getRequestUrl(request);
     }
     this.cachedRoutes.set(key, [httpAdapter.getRequestUrl(request)]);
