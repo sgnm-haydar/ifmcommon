@@ -8,12 +8,13 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
+
+import { KafkaConfig } from 'kafkajs';
+import { ExceptionType } from '../const/exception.type';
 import { I18NEnums } from '../const/i18n.enum';
+import { createExceptionReqResLogObj } from '../func/generate.exception.logobject';
 import { KafkaService } from '../queueService/kafkaService';
 import { PostKafka } from '../queueService/post-kafka';
-import { ExceptionType } from '../const/exception.type';
-import { createExceptionReqResLogObj } from '../func/generate.exception.logobject';
-import { KafkaConfig } from 'kafkajs';
 
 /**
  * Catch HttpExceptions and send this exception to messagebroker  to save the database
@@ -60,7 +61,17 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     switch (exception.getStatus()) {
       case 400:
+        console.log(400);
         try {
+          const result: any = exception.getResponse();
+          let message = '';
+          if (result?.key) {
+            message = await this.i18n.translate(result.key, {
+              lang: ctx.getRequest().i18nLang,
+              args: result.args,
+            });
+          }
+          console.log('message is ' + message + 'result is ' + result);
           const finalExcep = {
             reqResObject,
             clientResponse: exception.getResponse(),
@@ -72,10 +83,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
           this.logger.warn(`${JSON.stringify(finalExcep)}   `);
           response.status(status).json(exception.getResponse());
         } catch (error) {
-          console.log('`USER_EXCEPTION topic cannot connected due to ' + error);
+          console.log(
+            `${this.exceptionTopic} topic cannot connected due to` + error,
+          );
         }
         break;
       case 401:
+        console.log(401);
         try {
           const message = await getI18nNotAuthorizedMessage(this.i18n, request);
           const clientResponse = { status, message };
@@ -87,14 +101,17 @@ export class HttpExceptionFilter implements ExceptionFilter {
             this.exceptionTopic,
             JSON.stringify(finalExcep),
           );
-          console.log(`USER_EXCEPTION sending to topic from code 401`);
+          console.log(`${this.exceptionTopic} sending to topic from code 401`);
           this.logger.warn(`${JSON.stringify(finalExcep)}   `);
           response.status(status).json(clientResponse);
         } catch (error) {
-          console.log('`USER_EXCEPTIONtopic cannot connected due to ' + error);
+          console.log(
+            `${this.exceptionTopic} topic cannot connected due to ` + error,
+          );
         }
         break;
       case 403:
+        console.log(403);
         try {
           const message = await getI18nNotAuthorizedMessage(this.i18n, request);
           const clientResponse = { status, message };
@@ -115,6 +132,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         }
         break;
       case 404:
+        console.log(404);
         const result: any = exception.getResponse();
         try {
           let message = '';
@@ -140,9 +158,18 @@ export class HttpExceptionFilter implements ExceptionFilter {
         }
         break;
       case 500:
+        console.log(500);
         try {
-          const message = 'something goes wrong';
+          const result: any = exception.getResponse();
+          console.log('result is ' + result);
+          let message = 'something goes wrong';
 
+          if (result?.key) {
+            message = await this.i18n.translate(result.key, {
+              lang: ctx.getRequest().i18nLang,
+              args: result.args,
+            });
+          }
           const clientResponse = { status, message };
           const finalExcep = {
             reqResObject,
@@ -153,7 +180,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
             JSON.stringify(finalExcep),
           );
           this.logger.error(`${JSON.stringify(exception.message)}   `);
-          response.status(status).json(exception.message);
+          response.status(status).json({ message: exception.message });
           break;
         } catch (error) {
           const clientResponse = { status, error };
@@ -170,6 +197,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
           break;
         }
       default:
+        console.log('other');
         try {
           let message = 'something goes wrong';
           if (result?.key) {
