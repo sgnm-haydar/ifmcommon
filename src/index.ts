@@ -15,4 +15,4 @@ export * from './common/queueService/queueInterface';
 export * from './common/repositories/crud.repository.interface';
 export * from './common/repositories/history.repository.interface';
 export * from './common/repositories/graph.database.crud.interface';
-export * from './common/i18nCustomErrorDecorators/custom.decorator';
+export * from './common/ValidationErrorWithCustomMessageDecorators/custom.decorator';
