@@ -16,3 +16,4 @@ export * from './common/repositories/crud.repository.interface';
 export * from './common/repositories/history.repository.interface';
 export * from './common/repositories/graph.database.crud.interface';
 export * from './common/ValidationErrorWithCustomMessageDecorators/custom.decorator';
+export * from './common/const/i18n.validation.error.enum';
