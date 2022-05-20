@@ -159,6 +159,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         break;
       case 500:
         console.log(500);
+        console.log(exception);
         try {
           const result: any = exception.getResponse();
           console.log('result is ' + result);

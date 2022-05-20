@@ -1,7 +1,7 @@
 export interface BaseGraphDatabaseInterfaceRepository<T> {
   update(id: string, data: T | any);
 
-  create(data: T | any): Promise<T>;
+  create(data: T | any);
 
   findOneById(id: string);
 
