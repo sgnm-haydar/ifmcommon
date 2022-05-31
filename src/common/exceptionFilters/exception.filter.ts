@@ -1,4 +1,4 @@
-import { I18nService } from 'nestjs-i18n';
+import { I18nContext } from 'nestjs-i18n';
 import {
   ExceptionFilter,
   Catch,
@@ -15,6 +15,7 @@ import { I18NEnums } from '../const/i18n.enum';
 import { createExceptionReqResLogObj } from '../func/generate.exception.logobject';
 import { KafkaService } from '../queueService/kafkaService';
 import { PostKafka } from '../queueService/post-kafka';
+import { getI18nContextFromArgumentsHost } from 'nestjs-i18n';
 
 /**
  * Catch HttpExceptions and send this exception to messagebroker  to save the database
@@ -27,10 +28,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
   postKafka: PostKafka;
 
   exceptionTopic;
-  /**
-   * inject i18nService
-   */
-  constructor(private readonly i18n, kafkaConfig: KafkaConfig, exceptionTopic) {
+
+  constructor(kafkaConfig: KafkaConfig, exceptionTopic) {
     this.postKafka = new PostKafka(new KafkaService(kafkaConfig));
     this.exceptionTopic = exceptionTopic;
   }
@@ -42,7 +41,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
    * Catch method for  handle HttpExceptions
    */
   async catch(exception: HttpException, host: ArgumentsHost) {
+    const i18n = getI18nContextFromArgumentsHost(host);
     const ctx = host.switchToHttp();
+
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest();
     const status =
@@ -57,7 +58,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     );
     console.log('exception is ' + exception);
     console.log('exception.getStatus  is ' + exception.getStatus());
-    console.log('exception.getResponse  is ' + exception.getResponse());
+    console.log(exception.getResponse());
 
     switch (exception.getStatus()) {
       case 400:
@@ -66,7 +67,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
           const result: any = exception.getResponse();
           let message = '';
           if (result?.key) {
-            message = await this.i18n.translate(result.key, {
+            message = await i18n.translate(result.key, {
               lang: ctx.getRequest().i18nLang,
               args: result.args,
             });
@@ -91,7 +92,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       case 401:
         console.log(401);
         try {
-          const message = await getI18nNotAuthorizedMessage(this.i18n, request);
+          const message = await getI18nNotAuthorizedMessage(i18n, request);
           const clientResponse = { status, message };
           const finalExcep = {
             reqResObject,
@@ -113,7 +114,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       case 403:
         console.log(403);
         try {
-          const message = await getI18nNotAuthorizedMessage(this.i18n, request);
+          const message = await getI18nNotAuthorizedMessage(i18n, request);
           const clientResponse = { status, message };
           const finalExcep = {
             reqResObject,
@@ -137,7 +138,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         try {
           let message = '';
           if (result?.key) {
-            message = await this.i18n.translate(result.key, {
+            message = await i18n.translate(result.key, {
               lang: ctx.getRequest().i18nLang,
               args: result.args,
             });
@@ -166,7 +167,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
           let message = 'something goes wrong';
 
           if (result?.key) {
-            message = await this.i18n.translate(result.key, {
+            message = await i18n.translate(result.key, {
               lang: ctx.getRequest().i18nLang,
               args: result.args,
             });
@@ -202,7 +203,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         try {
           let message = 'something goes wrong';
           if (result?.key) {
-            message = await this.i18n.translate(result.key, {
+            message = await i18n.translate(result.key, {
               lang: ctx.getRequest().i18nLang,
               args: result.args,
             });
@@ -240,7 +241,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 /**
  * Get User not authorized message with i18n
  */
-async function getI18nNotAuthorizedMessage(i18n: I18nService, request) {
+async function getI18nNotAuthorizedMessage(i18n: I18nContext, request) {
   const username = request.user?.name || 'Guest';
   return await i18n.translate(I18NEnums.USER_NOT_HAVE_PERMISSION, {
     lang: request.i18nLang,

@@ -1,7 +1,7 @@
 import { ArgumentsHost, Catch, ExceptionFilter, Logger } from '@nestjs/common';
 import { KafkaConfig } from 'kafkajs';
 import { MongoError } from 'mongodb';
-import { I18nService } from 'nestjs-i18n';
+import { getI18nContextFromArgumentsHost, I18nContext } from 'nestjs-i18n';
 import { ExceptionType } from '../const/exception.type';
 import { I18NEnums } from '../const/i18n.enum';
 import { KafkaService } from '../queueService/kafkaService';
@@ -10,7 +10,7 @@ import { PostKafka } from '../queueService/post-kafka';
 /**
  * Catch MongoException and send this exception to messagebroker  to save the database
  */
-@Catch()
+@Catch(MongoError)
 export class MongoExceptionFilter implements ExceptionFilter {
   /**
    * create variable for postKafka Service
@@ -21,7 +21,7 @@ export class MongoExceptionFilter implements ExceptionFilter {
   /**
    * inject i18nService
    */
-  constructor(private readonly i18n, kafkaConfig: KafkaConfig, exceptionTopic) {
+  constructor(kafkaConfig: KafkaConfig, exceptionTopic) {
     this.postKafka = new PostKafka(new KafkaService(kafkaConfig));
     this.exceptionTopic = exceptionTopic;
   }
@@ -35,6 +35,7 @@ export class MongoExceptionFilter implements ExceptionFilter {
    */
   async catch(exception: MongoError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
+    const i18n = getI18nContextFromArgumentsHost(host);
     const request = ctx.getRequest();
     const response = ctx.getResponse();
 
@@ -68,9 +69,10 @@ export class MongoExceptionFilter implements ExceptionFilter {
         response.status(500).json({ code: 500, message: 'Server down' });
         break;
       case 11000: // duplicate exceptio
+        console.log('duplicate exception');
         const errorProperties = exceptionMessage.match(/\{.*\}/)[0];
         const message = await getI18nMongoErrorMessage(
-          this.i18n,
+          i18n,
           request,
           I18NEnums.DUBLICATE_ERROR,
           errorProperties,
@@ -109,7 +111,7 @@ export class MongoExceptionFilter implements ExceptionFilter {
  * Get Mongo Error with i18N Message
  */
 async function getI18nMongoErrorMessage(
-  i18n: I18nService,
+  i18n: I18nContext,
   request,
   i18NEnum: I18NEnums,
   errorProperties,
