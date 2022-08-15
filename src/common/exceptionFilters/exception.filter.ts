@@ -71,6 +71,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
               lang: ctx.getRequest().i18nLang,
               args: result.args,
             });
+            const finalExcep = {
+              reqResObject,
+              clientResponse: { message, statusCode: 400 },
+            };
+            await this.postKafka.producerSendMessage(
+              this.exceptionTopic,
+              JSON.stringify(finalExcep),
+            );
+            return response.status(status).json({ message, statusCode: 400 });
           }
           console.log('message is ' + message + 'result is ' + result);
           const finalExcep = {

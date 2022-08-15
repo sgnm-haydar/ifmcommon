@@ -7,6 +7,5 @@ export function createReqLogObj(request) {
     user: request.user || {},
   };
 
-  const reqResObject = { requestInformation };
-  return reqResObject;
+  return requestInformation;
 }
