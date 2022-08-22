@@ -57,6 +57,12 @@ export class LoggingInterceptor implements NestInterceptor {
     const method = request.method;
     const now = Date.now();
     const url = request.url;
+
+    if (request.user && Object.keys(request.user).length > 0) {
+      const realm = request.user.iss.split('realms/')[1];
+      request.headers['realm'] = realm;
+    }
+
     //this parsedUrl for the get which endpoints hit by user
     const parsedUrl = url.match(/^\/[^\?\/]*/)[0];
     // this event triggered when request is and response is done
