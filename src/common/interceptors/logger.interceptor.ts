@@ -63,6 +63,12 @@ export class LoggingInterceptor implements NestInterceptor {
       request.headers['realm'] = realm;
     }
 
+    //key and realm cannot updated
+    if (method === 'PATCH') {
+      delete request.body['key'];
+      delete request.body['realm'];
+    }
+
     //this parsedUrl for the get which endpoints hit by user
     const parsedUrl = url.match(/^\/[^\?\/]*/)[0];
     // this event triggered when request is and response is done
