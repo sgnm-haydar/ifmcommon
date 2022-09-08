@@ -60,6 +60,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
     console.log('exception.getStatus  is ' + exception.getStatus());
     console.log(exception.getResponse());
 
+    let lang = 'en';
+
+    if (request.headers?.language) {
+      lang = request.headers.language.toLowerCase();
+    }
+
     switch (exception.getStatus()) {
       case 400:
         console.log(400);
@@ -68,7 +74,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
           let message = '';
           if (result?.key) {
             message = await i18n.translate(result.key, {
-              lang: ctx.getRequest().i18nLang,
+              lang,
               args: result.args,
             });
             const finalExcep = {
@@ -101,7 +107,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
       case 401:
         console.log(401);
         try {
-          const message = await getI18nNotAuthorizedMessage(i18n, request);
+          const message = await getI18nNotAuthorizedMessage(
+            i18n,
+            request,
+            lang,
+          );
           const clientResponse = { status, message };
           const finalExcep = {
             reqResObject,
@@ -123,7 +133,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
       case 403:
         console.log(403);
         try {
-          const message = await getI18nNotAuthorizedMessage(i18n, request);
+          const message = await getI18nNotAuthorizedMessage(
+            i18n,
+            request,
+            lang,
+          );
           const clientResponse = { status, message };
           const finalExcep = {
             reqResObject,
@@ -148,7 +162,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
           let message = '';
           if (result?.key) {
             message = await i18n.translate(result.key, {
-              lang: ctx.getRequest().i18nLang,
+              lang,
               args: result.args,
             });
           }
@@ -177,7 +191,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
           if (result?.key) {
             message = await i18n.translate(result.key, {
-              lang: ctx.getRequest().i18nLang,
+              lang,
               args: result.args,
             });
           }
@@ -213,7 +227,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
           let message = 'something goes wrong';
           if (result?.key) {
             message = await i18n.translate(result.key, {
-              lang: ctx.getRequest().i18nLang,
+              lang,
               args: result.args,
             });
           }
@@ -250,10 +264,17 @@ export class HttpExceptionFilter implements ExceptionFilter {
 /**
  * Get User not authorized message with i18n
  */
-async function getI18nNotAuthorizedMessage(i18n: I18nContext, request) {
+async function getI18nNotAuthorizedMessage(
+  i18n: I18nContext,
+  request,
+  lang = 'en',
+) {
   const username = request.user?.name || 'Guest';
+  if (request.headers?.language) {
+    lang = request.headers?.language.toLowerCase();
+  }
   return await i18n.translate(I18NEnums.USER_NOT_HAVE_PERMISSION, {
-    lang: request.i18nLang,
+    lang,
     args: { username },
   });
 }
