@@ -184,7 +184,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
             JSON.stringify(finalExcep),
           );
           this.logger.warn(`${JSON.stringify(finalExcep)}   `);
-          response.status(status).json(exception.getResponse());
+          response
+            .status(status)
+            .json({ message: exception.getResponse(), status });
         } catch (error) {
           this.logger.error(`${JSON.stringify(error)}   `);
         }
