@@ -58,6 +58,12 @@ export class LoggingInterceptor implements NestInterceptor {
     const now = Date.now();
     const url = request.url;
 
+    if (request.headers?.language) {
+      request.headers['language'] = request.headers['language'].toLowerCase();
+    } else {
+      request.headers['language'] = 'en';
+    }
+
     if (request.user && Object.keys(request.user).length > 0) {
       const realm = request.user.iss.split('realms/')[1];
       request.headers['realm'] = realm;
