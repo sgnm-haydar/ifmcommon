@@ -165,18 +165,26 @@ export class HttpExceptionFilter implements ExceptionFilter {
               lang,
               args: result.args,
             });
+            const finalExcep = {
+              reqResObject,
+              clientResponse: { message, statusCode: 404 },
+            };
+            await this.postKafka.producerSendMessage(
+              this.exceptionTopic,
+              JSON.stringify(finalExcep),
+            );
+            return response.status(status).json({ message, statusCode: 404 });
           }
-          const clientResponse = { status, message };
           const finalExcep = {
             reqResObject,
-            clientResponse,
+            clientResponse: exception.getResponse(),
           };
           await this.postKafka.producerSendMessage(
             this.exceptionTopic,
             JSON.stringify(finalExcep),
           );
           this.logger.warn(`${JSON.stringify(finalExcep)}   `);
-          response.status(status).json(clientResponse);
+          response.status(status).json(exception.getResponse());
         } catch (error) {
           this.logger.error(`${JSON.stringify(error)}   `);
         }
