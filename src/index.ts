@@ -5,7 +5,7 @@ export * from './common/interceptors/http.cache.interceptor';
 export * from './common/interceptors/logger.interceptor';
 export * from './common/interceptors/timeout.interceptor';
 export * from './common/const/i18n.enum';
-export * from './common/baseObject/base.object';
+export * from './common/baseobject/base.object';
 export * from './common/func/objectId.check';
 export * from './common/func/generate.new.date';
 export * from './common/func/nodeHasChild';
@@ -19,3 +19,4 @@ export * from './common/ValidationErrorWithCustomMessageDecorators/custom.decora
 export * from './common/const/i18n.validation.error.enum';
 export * from './common/kafka/kafka.module';
 export * from './common/kafka/kafka.service';
+export * from './common/class/lazyLoading.dealer';

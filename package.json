@@ -1,6 +1,6 @@
 {
   "name": "ifmcommon",
-  "version": "0.0.49",
+  "version": "0.0.56",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
@@ -38,7 +38,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
-    "sgnm-neo4j": "^0.0.208"
+    "sgnm-neo4j": "^0.0.212"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",
