@@ -5,13 +5,16 @@ export interface LazyLoadingInterface {
     rootFilters: object,
     childerenFilters: object,
     childrensChildFilter: object,
+    excluted_labels_for_children: string[],
     header,
   ): any;
   loadByLabel(
     label: string,
+    leafType: string,
     rootFilters: object,
     childerenFilters: object,
     childrensChildFilter: object,
+    excluted_labels_for_children: string[],
     header,
   ): any;
   loadByPath(
@@ -21,6 +24,8 @@ export interface LazyLoadingInterface {
     rootFilters: object,
     childerenFilters: object,
     childrensChildFilter: object,
+    excluded_labels_for_parent: string[],
+    excluded_labels_for_children: string[],
   );
   loadClassification(label: string, header): any;
   getClassificationRootAndChildrenByLanguageAndRealm(

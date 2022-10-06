@@ -1,17 +1,19 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { I18NEnums } from '../const/i18n.enum';
 import { Neo4jService } from 'sgnm-neo4j/dist';
-import { LazyLoadingInterface } from '../interface/lazyLoading.interface';
+import { LazyLoadingInterface } from 'src/common/interface/lazyLoading.interface';
 
 @Injectable()
 export class LazyLoadingRepository implements LazyLoadingInterface {
   constructor(private readonly neo4jService: Neo4jService) {}
-
   async loadByLabel(
     label: string,
+    leafType: string,
     rootFilters: object,
     childerenFilters: object,
     childrensChildFilter: object,
+    excluted_labels_for_children: string[] = [''],
+    header: any,
   ) {
     try {
       const node = await this.neo4jService.findByLabelAndFilters(
@@ -27,12 +29,13 @@ export class LazyLoadingRepository implements LazyLoadingInterface {
       }
 
       const firstLevelChildren =
-        await this.neo4jService.findChildrensByLabelsAndRelationNameOneLevel(
+        await this.neo4jService.findChildrensByLabelsAndFiltersWithNotLabelsOneLevel(
           [label],
           rootFilters,
+          [''],
           [],
           childerenFilters,
-          'PARENT_OF',
+          excluted_labels_for_children,
         );
       if (!firstLevelChildren.length) {
         return { ...node[0].get('n').properties };
@@ -55,7 +58,9 @@ export class LazyLoadingRepository implements LazyLoadingInterface {
             labels: item.get('children').labels,
             ...item.get('children').properties,
             id: item.get('children').identity.low,
-            leaf: firstLevelChildrensChildren.length <= 0,
+            leaf:
+              firstLevelChildrensChildren.length <= 0 ||
+              item.get('children').labels.includes(leafType),
           };
         }),
       );
@@ -77,6 +82,7 @@ export class LazyLoadingRepository implements LazyLoadingInterface {
     rootFilters: object,
     childerenFilters: object,
     childrensChildFilter: object,
+    excluded_labels_for_children: string[] = [''],
   ) {
     try {
       const node = await this.neo4jService.findByLabelAndFilters([], {
@@ -92,12 +98,13 @@ export class LazyLoadingRepository implements LazyLoadingInterface {
       }
 
       const firstLevelChildren =
-        await this.neo4jService.findChildrensByLabelsAndRelationNameOneLevel(
+        await this.neo4jService.findChildrensByLabelsAndFiltersWithNotLabelsOneLevel(
           [],
           { key, ...rootFilters },
+          [''],
           [],
           childerenFilters,
-          'PARENT_OF',
+          excluded_labels_for_children,
         );
       if (!firstLevelChildren.length) {
         return { ...node[0].get('n').properties };
@@ -143,13 +150,18 @@ export class LazyLoadingRepository implements LazyLoadingInterface {
     rootFilters: object,
     childerenFilters: object,
     childrensChildFilter: object,
+    excluded_labels_for_parent: string[] = [''],
+    excluded_labels_for_children: string[] = [''],
   ) {
     try {
       const rootWithChildren: any = await this.loadByLabel(
         label,
+        leafType,
         rootFilters,
         childerenFilters,
         childrensChildFilter,
+        excluded_labels_for_parent,
+        {},
       );
 
       // referans tutucu
@@ -160,12 +172,13 @@ export class LazyLoadingRepository implements LazyLoadingInterface {
       }
       delete rootFilters['realm'];
       for (const item of path) {
-        const loadedChildren = await this.loadByKey(
+        let loadedChildren = await this.loadByKey(
           item,
           leafType,
           rootFilters,
           childerenFilters,
           childrensChildFilter,
+          excluded_labels_for_children,
         );
 
         if (loadedChildren.children) {
@@ -179,7 +192,7 @@ export class LazyLoadingRepository implements LazyLoadingInterface {
           }
         }
       }
-      console.log(rootWithChildren);
+
       return rootWithChildren;
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
