@@ -20,4 +20,5 @@ export * from './common/const/i18n.validation.error.enum';
 export * from './common/kafka/kafka.module';
 export * from './common/kafka/kafka.service';
 export * from './common/class/lazyLoading.dealer';
+export * from './common/commonDto/pagination.query';
 export * from './common/func/common.func';
