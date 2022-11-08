@@ -16,16 +16,17 @@ export class TransforLabelsInterceptor implements NestInterceptor {
     const keys = Object.keys(query);
     for (let index = 0; index < keys.length; index++) {
       let labelArray = [];
-      if (query[keys[index]].startsWith('label')) {
-        if (typeof query.label === 'string') {
-          labelArray.push(query.label);
+
+      if (keys[index].startsWith('label')) {
+        if (typeof query[keys[index]] === 'string') {
+          labelArray.push(query[keys[index]]);
+
+          query[keys[index]] = labelArray;
         } else {
-          labelArray = query.label;
+          labelArray = query[keys[index]];
         }
-        query[keys[index]] = labelArray;
       }
     }
-
     return next.handle();
   }
 }
