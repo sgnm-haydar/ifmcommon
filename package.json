@@ -1,7 +1,6 @@
 {
   "name": "ifmcommon",
-
-  "version": "0.0.61",
+  "version": "0.0.62",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
@@ -29,8 +28,8 @@
     "@nestjs/microservices": "^8.4.4",
     "@nestjs/mongoose": "^9.0.3",
     "@nestjs/platform-express": "^8.0.0",
+    "@nestjs/swagger": "^5.2.1",
     "class-transformer": "^0.5.1",
-    "@nestjs/swagger": "^5.0.8",
     "kafkajs": "^1.16.0",
     "moment": "^2.29.4",
     "mongoose": "^6.3.1",
