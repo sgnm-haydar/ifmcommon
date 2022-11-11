@@ -22,3 +22,4 @@ export * from './common/kafka/kafka.service';
 export * from './common/class/lazyLoading.dealer';
 export * from './common/commonDto/pagination.query';
 export * from './common/func/common.func';
+export * from './common/interceptors/transform.labels.interceptor';
