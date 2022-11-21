@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   CallHandler,
 } from '@nestjs/common';
-import { Observable, skip } from 'rxjs';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class TransforLabelsInterceptor implements NestInterceptor {
@@ -34,7 +34,8 @@ export class TransforLabelsInterceptor implements NestInterceptor {
 
       if (keys[index].startsWith('orderByColumn')) {
         if (typeof query[keys[index]] === 'string') {
-          labelArray.push(query[keys[index]]);
+          console.log(query[keys[index]]);
+          orderByColumnArr.push(query[keys[index]]);
 
           query[keys[index]] = orderByColumnArr;
         } else {
