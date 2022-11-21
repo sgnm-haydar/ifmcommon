@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   CallHandler,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { Observable, skip } from 'rxjs';
 
 @Injectable()
 export class TransforLabelsInterceptor implements NestInterceptor {
@@ -13,11 +13,25 @@ export class TransforLabelsInterceptor implements NestInterceptor {
     const request = http.getRequest();
     const query = request.query;
 
+    if (query['page']) {
+      query['skip'] = Math.abs(query['page'] - 1) * query['limit'];
+    }
+
     const keys = Object.keys(query);
     for (let index = 0; index < keys.length; index++) {
       let labelArray = [];
 
       if (keys[index].startsWith('label')) {
+        if (typeof query[keys[index]] === 'string') {
+          labelArray.push(query[keys[index]]);
+
+          query[keys[index]] = labelArray;
+        } else {
+          labelArray = query[keys[index]];
+        }
+      }
+
+      if (keys[index].startsWith('orderByColumn')) {
         if (typeof query[keys[index]] === 'string') {
           labelArray.push(query[keys[index]]);
 
