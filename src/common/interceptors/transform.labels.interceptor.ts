@@ -20,6 +20,7 @@ export class TransforLabelsInterceptor implements NestInterceptor {
     const keys = Object.keys(query);
     for (let index = 0; index < keys.length; index++) {
       let labelArray = [];
+      let orderByColumnArr = [];
 
       if (keys[index].startsWith('label')) {
         if (typeof query[keys[index]] === 'string') {
@@ -35,9 +36,9 @@ export class TransforLabelsInterceptor implements NestInterceptor {
         if (typeof query[keys[index]] === 'string') {
           labelArray.push(query[keys[index]]);
 
-          query[keys[index]] = labelArray;
+          query[keys[index]] = orderByColumnArr;
         } else {
-          labelArray = query[keys[index]];
+          orderByColumnArr = query[keys[index]];
         }
       }
     }
