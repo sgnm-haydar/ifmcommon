@@ -112,7 +112,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
             request,
             lang,
           );
-          const clientResponse = { status, message };
+          const clientResponse = { statusCode:status, message };
           const finalExcep = {
             reqResObject,
             clientResponse,
@@ -138,7 +138,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
             request,
             lang,
           );
-          const clientResponse = { status, message };
+          const clientResponse = { statusCode:status, message };
           const finalExcep = {
             reqResObject,
             clientResponse,
@@ -205,7 +205,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
               args: result.args,
             });
           }
-          const clientResponse = { status, message };
+          const clientResponse = { statusCode:status, message };
           const finalExcep = {
             reqResObject,
             clientResponse,
@@ -218,7 +218,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
           response.status(status).json({ message: exception.message });
           break;
         } catch (error) {
-          const clientResponse = { status, error };
+          const clientResponse = { statusCode:status, error };
           const finalExcep = {
             reqResObject,
             clientResponse,
@@ -254,7 +254,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
           response.status(status).json(exception.message);
           break;
         } catch (error) {
-          const clientResponse = { status, error };
+          const clientResponse = { statusCode:status, error };
           const finalExcep = {
             reqResObject,
             clientResponse,
