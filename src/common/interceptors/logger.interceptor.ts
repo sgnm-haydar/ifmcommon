@@ -94,7 +94,10 @@ export class LoggingInterceptor implements NestInterceptor {
           this.logTopic,
           JSON.stringify(log),
         );
-        console.log(`${this.logTopic} topic send succesful`);
+        if (request?.url !== '/health') {
+          console.log(`${this.operationsTopic} topic send succesful`);
+          console.log(`${this.logTopic} topic send succesful`);
+        }
       } catch (error) {
         console.log(`${this.logTopic} topic cannot connected due to ` + error);
       }
@@ -113,7 +116,9 @@ export class LoggingInterceptor implements NestInterceptor {
               JSON.stringify(finalResponse),
               parsedUrl,
             );
-            console.log(`${this.operationsTopic} topic send succesful`);
+            if (request?.url !== '/health') {
+              console.log(`${this.operationsTopic} topic send succesful`);
+            }
           }
         } catch (error) {
           console.log(
