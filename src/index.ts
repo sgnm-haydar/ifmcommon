@@ -23,4 +23,4 @@ export * from './common/kafka/kafka.service';
 export * from './common/commonDto/pagination.query';
 export * from './common/func/common.func';
 export * from './common/interceptors/transform.labels.interceptor';
-export * from  './common/func/isValidObject.func';
+export * from  './common/func/isValid.func';
