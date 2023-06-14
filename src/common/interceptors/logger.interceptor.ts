@@ -11,6 +11,7 @@ import { createReqLogObj } from '../func/generate.log.object';
 import { checkObjectIddİsValid } from '../func/objectId.check';
 import { KafkaService } from '../queueService/kafkaService';
 import { PostKafka } from '../queueService/post-kafka';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
 /**
  * Decorator for interceptor to use fact in modules,controller
@@ -49,9 +50,20 @@ export class LoggingInterceptor implements NestInterceptor {
     context: ExecutionContext,
     next: CallHandler,
   ): Promise<Observable<any>> {
-    const ctx = context.switchToHttp();
-    const request = ctx.getRequest();
-    const response = ctx.getResponse();
+    const isHttp = context.getType() === 'http';
+    let httpContext, gqlContext;
+    let request, response;
+
+    if (isHttp) {
+      httpContext = context.switchToHttp();
+      request = httpContext.getRequest();
+      response = httpContext.getResponse();
+    } else {
+      gqlContext = GqlExecutionContext.create(context);
+      request = gqlContext.getContext().req;
+      response = gqlContext.getContext().res;
+    }
+    console.log(gqlContext.getContext());
     const query = request.params;
     const user: object = request.user;
     const method = request.method;

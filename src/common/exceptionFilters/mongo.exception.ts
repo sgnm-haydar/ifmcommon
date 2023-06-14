@@ -6,6 +6,7 @@ import { ExceptionType } from '../const/exception.type';
 import { I18NEnums } from '../const/i18n.enum';
 import { KafkaService } from '../queueService/kafkaService';
 import { PostKafka } from '../queueService/post-kafka';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
 /**
  * Catch MongoException and send this exception to messagebroker  to save the database

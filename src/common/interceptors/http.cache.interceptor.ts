@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 
 import { SetMetadata } from '@nestjs/common';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
 /**
  * this is used for @Get() decarotor for disable cache
@@ -28,7 +29,18 @@ export class HttpCacheInterceptor extends CacheInterceptor {
     /**
      * get incoming request object from execution context
      */
-    const request = context.switchToHttp().getRequest();
+    const isHttp = context.getType() === 'http';
+    let httpContext, gqlContext;
+    let request;
+
+    if (isHttp) {
+      httpContext = context.switchToHttp();
+      request = httpContext.getRequest();
+    } else {
+      gqlContext = GqlExecutionContext.create(context);
+      request = gqlContext.getContext().req;
+    }
+
     // if there is no request, the incoming request is graphql, therefore bypass response caching.
     // later we can get the type of request (query/mutation) and if query get its field name, and attributes and cache accordingly. Otherwise, clear the cache in case of the request type is mutation.
     if (!request) {
