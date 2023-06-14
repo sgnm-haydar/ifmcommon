@@ -63,7 +63,6 @@ export class LoggingInterceptor implements NestInterceptor {
       request = gqlContext.getContext().req;
       response = gqlContext.getContext().res;
     }
-    console.log(gqlContext.getContext());
     const query = request.params;
     const user: object = request.user;
     const method = request.method;
