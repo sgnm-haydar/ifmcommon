@@ -4,13 +4,26 @@ import {
   ExecutionContext,
   CallHandler,
 } from '@nestjs/common';
+import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable } from 'rxjs';
 
 @Injectable()
 export class TransforLabelsInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<string> {
-    const http = context.switchToHttp();
-    const request = http.getRequest();
+    const isHttp = context.getType() === 'http';
+    let httpContext, gqlContext;
+    let request, response;
+
+    if (isHttp) {
+      httpContext = context.switchToHttp();
+      request = httpContext.getRequest();
+      response = httpContext.getResponse();
+    } else {
+      gqlContext = GqlExecutionContext.create(context);
+      request = gqlContext.getContext().req;
+      response = gqlContext.getContext().res;
+    }
+
     const query = request.query;
 
     if (query['page']) {
