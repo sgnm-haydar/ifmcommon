@@ -24,3 +24,4 @@ export * from './common/commonDto/pagination.query';
 export * from './common/func/common.func';
 export * from './common/interceptors/transform.labels.interceptor';
 export * from  './common/func/isValid.func';
+export * from  './common/exceptionFilters/rcp.exteptipn'
