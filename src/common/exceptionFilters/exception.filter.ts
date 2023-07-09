@@ -10,12 +10,12 @@ import {
 import { Response } from 'express';
 
 import { KafkaConfig } from 'kafkajs';
-import { ExceptionType } from '../const/exception.type';
+
+import { getI18nContextFromArgumentsHost } from 'nestjs-i18n';
 import { I18NEnums } from '../const/i18n.enum';
-import { createExceptionReqResLogObj } from '../func/generate.exception.logobject';
 import { KafkaService } from '../queueService/kafkaService';
 import { PostKafka } from '../queueService/post-kafka';
-import { getI18nContextFromArgumentsHost } from 'nestjs-i18n';
+
 
 /**
  * Catch HttpExceptions and send this exception to messagebroker  to save the database
@@ -51,11 +51,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    const reqResObject = createExceptionReqResLogObj(
-      request,
-      exception,
-      ExceptionType.HTTP_EXCEPTİON,
-    );
+
     console.log('exception is ' + exception);
     console.log('exception.getStatus  is ' + exception.getStatus());
     console.log(exception.getResponse());
@@ -63,64 +59,59 @@ export class HttpExceptionFilter implements ExceptionFilter {
     let lang = 'en';
 
     if (request.headers?.language) {
-      lang = request.headers.language.toLowerCase();
+      lang = request.headers?.language?.toLowerCase();
     }
 
     switch (exception.getStatus()) {
-      case 400:
-        console.log(400);
+      case  HttpStatus.BAD_REQUEST:
+        console.log( HttpStatus.BAD_REQUEST);
         try {
           const result: any = exception.getResponse();
           let message = '';
           if (result?.key) {
+
             message = await i18n.translate(result.key, {
               lang,
               args: result.args,
             });
+            return response.status(status).json({ message, statusCode:  HttpStatus.BAD_REQUEST,errorCode:result?.code });
+          }else if(result?.message){
+            message=result.message;
+
+            if(result?.code){
+                return response.status(status).json({ message, statusCode:  HttpStatus.BAD_REQUEST,errorCode: result?.code });
+            }else{
+                return response.status(status).json({ message, statusCode:  HttpStatus.BAD_REQUEST });
+            }
+             
+          }else{
+            console.log('message is ' + message + 'result is ' + result);
             const finalExcep = {
-              reqResObject,
-              clientResponse: { message, statusCode: 400 },
+               
+              clientResponse: exception.getResponse(),
             };
-            await this.postKafka.producerSendMessage(
-              this.exceptionTopic,
-              JSON.stringify(finalExcep),
-            );
-            return response.status(status).json({ message, statusCode: 400 });
+            this.logger.warn(`${JSON.stringify(finalExcep)}   `);
+            response.status(status).json(exception.getResponse());
           }
-          console.log('message is ' + message + 'result is ' + result);
-          const finalExcep = {
-            reqResObject,
-            clientResponse: exception.getResponse(),
-          };
-          await this.postKafka.producerSendMessage(
-            this.exceptionTopic,
-            JSON.stringify(finalExcep),
-          );
-          this.logger.warn(`${JSON.stringify(finalExcep)}   `);
-          response.status(status).json(exception.getResponse());
         } catch (error) {
           console.log(
             `${this.exceptionTopic} topic cannot connected due to` + error,
           );
         }
         break;
-      case 401:
-        console.log(401);
+      case HttpStatus.UNAUTHORIZED:
+        console.log( HttpStatus.UNAUTHORIZED);
         try {
           const message = await getI18nNotAuthorizedMessage(
             i18n,
             request,
             lang,
           );
-          const clientResponse = { statusCode:status, message };
+          const clientResponse = { statusCode:status, message,errorCode:401 };
           const finalExcep = {
-            reqResObject,
+             
             clientResponse,
           };
-          await this.postKafka.producerSendMessage(
-            this.exceptionTopic,
-            JSON.stringify(finalExcep),
-          );
           console.log(`${this.exceptionTopic} sending to topic from code 401`);
           this.logger.warn(`${JSON.stringify(finalExcep)}   `);
           response.status(status).json(clientResponse);
@@ -130,23 +121,23 @@ export class HttpExceptionFilter implements ExceptionFilter {
           );
         }
         break;
-      case 403:
-        console.log(403);
+      case HttpStatus.FORBIDDEN:
+        console.log( HttpStatus.FORBIDDEN);
         try {
           const message = await getI18nNotAuthorizedMessage(
             i18n,
             request,
             lang,
           );
-          const clientResponse = { statusCode:status, message };
+          const clientResponse = { statusCode:status, message,errorCode:403 };
           const finalExcep = {
-            reqResObject,
+             
             clientResponse,
           };
-          await this.postKafka.producerSendMessage(
-            this.exceptionTopic,
-            JSON.stringify(finalExcep),
-          );
+        //   await this.postKafka.producerSendMessage(
+        //     this.exceptionTopic,
+        //     JSON.stringify(finalExcep),
+        //   );
           this.logger.warn(`${JSON.stringify(finalExcep)}   `);
           response.status(status).json(clientResponse);
         } catch (error) {
@@ -155,44 +146,43 @@ export class HttpExceptionFilter implements ExceptionFilter {
           );
         }
         break;
-      case 404:
-        console.log(404);
+      case HttpStatus.NOT_FOUND:
+        console.log( HttpStatus.NOT_FOUND);
         const result: any = exception.getResponse();
         try {
-          let message = '';
-          if (result?.key) {
-            message = await i18n.translate(result.key, {
-              lang,
-              args: result.args,
-            });
-            const finalExcep = {
-              reqResObject,
-              clientResponse: { message, statusCode: 404 },
-            };
-            await this.postKafka.producerSendMessage(
-              this.exceptionTopic,
-              JSON.stringify(finalExcep),
-            );
-            return response.status(status).json({ message, statusCode: 404 });
-          }
-          const finalExcep = {
-            reqResObject,
-            clientResponse: exception.getResponse(),
-          };
-          await this.postKafka.producerSendMessage(
-            this.exceptionTopic,
-            JSON.stringify(finalExcep),
-          );
-          this.logger.warn(`${JSON.stringify(finalExcep)}   `);
-          response
-            .status(status)
-            .json({ message: exception.getResponse(), status });
+            const result: any = exception.getResponse();
+            let message = '';
+            if (result?.key) {
+  
+              message = await i18n.translate(result.key, {
+                lang,
+                args: result.args,
+              });
+              return response.status(status).json({ message, statusCode: HttpStatus.NOT_FOUND,errorCode:result?.code });
+            }else if(result?.message){
+              message=result.message;
+  
+              if(result?.code){
+                  return response.status(status).json({ message, statusCode:  HttpStatus.NOT_FOUND,errorCode: result?.code });
+              }else{
+                  return response.status(status).json({ message, statusCode:  HttpStatus.NOT_FOUND });
+              }
+               
+            }else{
+              console.log('message is ' + message + 'result is ' + result);
+              const finalExcep = {
+                 
+                clientResponse: exception.getResponse(),
+              };
+              this.logger.warn(`${JSON.stringify(finalExcep)}   `);
+              response.status(status).json(exception.getResponse());
+            }
         } catch (error) {
           this.logger.error(`${JSON.stringify(error)}   `);
         }
         break;
-      case 500:
-        console.log(500);
+      case HttpStatus.INTERNAL_SERVER_ERROR:
+        console.log( HttpStatus.INTERNAL_SERVER_ERROR);
         console.log(exception);
         try {
           const result: any = exception.getResponse();
@@ -207,20 +197,20 @@ export class HttpExceptionFilter implements ExceptionFilter {
           }
           const clientResponse = { statusCode:status, message };
           const finalExcep = {
-            reqResObject,
+             
             clientResponse,
           };
-          await this.postKafka.producerSendMessage(
-            this.exceptionTopic,
-            JSON.stringify(finalExcep),
-          );
+        //   await this.postKafka.producerSendMessage(
+        //     this.exceptionTopic,
+        //     JSON.stringify(finalExcep),
+        //   );
           this.logger.error(`${JSON.stringify(exception.message)}   `);
           response.status(status).json({ message: exception.message });
           break;
         } catch (error) {
           const clientResponse = { statusCode:status, error };
           const finalExcep = {
-            reqResObject,
+             
             clientResponse,
           };
           await this.postKafka.producerSendMessage(
@@ -243,20 +233,20 @@ export class HttpExceptionFilter implements ExceptionFilter {
           }
           const clientResponse = { status, message };
           const finalExcep = {
-            reqResObject,
+             
             clientResponse,
           };
-          await this.postKafka.producerSendMessage(
-            this.exceptionTopic,
-            JSON.stringify(finalExcep),
-          );
+        //   await this.postKafka.producerSendMessage(
+        //     this.exceptionTopic,
+        //     JSON.stringify(finalExcep),
+        //   );
           this.logger.error(`${JSON.stringify(exception.message)}   `);
           response.status(status).json(exception.message);
           break;
         } catch (error) {
           const clientResponse = { statusCode:status, error };
           const finalExcep = {
-            reqResObject,
+             
             clientResponse,
           };
           await this.postKafka.producerSendMessage(
