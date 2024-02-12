@@ -1,4 +1,3 @@
-import { I18nContext } from 'nestjs-i18n';
 import {
   ExceptionFilter,
   Catch,
@@ -11,7 +10,7 @@ import { Response } from 'express';
 
 import { KafkaConfig } from 'kafkajs';
 
-import { getI18nContextFromArgumentsHost } from 'nestjs-i18n';
+import { I18nContext } from 'nestjs-i18n';
 import { I18NEnums } from '../const/i18n.enum';
 import { KafkaService } from '../queueService/kafkaService';
 import { PostKafka } from '../queueService/post-kafka';
@@ -41,7 +40,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
    * Catch method for  handle HttpExceptions
    */
   async catch(exception: HttpException, host: ArgumentsHost) {
-    const i18n = getI18nContextFromArgumentsHost(host);
+    const i18n = I18nContext.current(host);
+
     const ctx = host.switchToHttp();
 
     const response = ctx.getResponse<Response>();

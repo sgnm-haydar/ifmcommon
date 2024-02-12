@@ -1,7 +1,7 @@
 import { ArgumentsHost, Catch, ExceptionFilter, Logger } from '@nestjs/common';
 import { KafkaConfig } from 'kafkajs';
 import { MongoError } from 'mongodb';
-import { getI18nContextFromArgumentsHost, I18nContext } from 'nestjs-i18n';
+import {  I18nContext } from 'nestjs-i18n';
 import { ExceptionType } from '../const/exception.type';
 import { I18NEnums } from '../const/i18n.enum';
 import { KafkaService } from '../queueService/kafkaService';
@@ -36,7 +36,7 @@ export class MongoExceptionFilter implements ExceptionFilter {
    */
   async catch(exception: MongoError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const i18n = getI18nContextFromArgumentsHost(host);
+    const i18n = I18nContext.current(host);
     const request = ctx.getRequest();
     const response = ctx.getResponse();
 

@@ -1,6 +1,7 @@
 import { Prop } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { v4 as uuidv4 } from 'uuid';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { v4: uuidv4 } = require('uuid');
 import { genCurrentDate } from '../func/generate.new.date';
 /**
  * Base object for entities whic inherit mongoose document meytods

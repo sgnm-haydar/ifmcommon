@@ -3,8 +3,8 @@ import { Injectable, Inject } from '@nestjs/common';
 import { Producer } from 'kafkajs';
 
 import { KAFKA_PRODUCER } from './kafka.constants';
-
-import { v4 as uuidv4 } from 'uuid';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { v4: uuidv4 } = require('uuid');
 
 @Injectable()
 export class NestKafkaService {

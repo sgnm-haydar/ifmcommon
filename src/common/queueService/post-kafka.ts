@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 
 import { Producer } from 'kafkajs';
 import { IQueueService } from './queueInterface';
-import { v4 as uuidv4 } from 'uuid';
-
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { v4: uuidv4 } = require('uuid');
 /**
  * Kafka Message Broker Service(Producer & Consumer)
  */

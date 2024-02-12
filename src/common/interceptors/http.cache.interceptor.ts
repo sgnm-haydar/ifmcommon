@@ -1,10 +1,5 @@
-import {
-  Injectable,
-  CacheInterceptor,
-  ExecutionContext,
-  CACHE_KEY_METADATA,
-} from '@nestjs/common';
-
+import { Injectable, ExecutionContext } from '@nestjs/common';
+import { CacheInterceptor, CACHE_KEY_METADATA } from '@nestjs/cache-manager';
 import { SetMetadata } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 
