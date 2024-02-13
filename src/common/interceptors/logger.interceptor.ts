@@ -90,30 +90,34 @@ export class LoggingInterceptor implements NestInterceptor {
     const parsedUrl = url.match(/^\/[^\?\/]*/)[0];
     // this event triggered when request is and response is done
     const requestInformation = createReqLogObj(request);
-    response.on('close', async () => {
-      const { statusCode, statusMessage } = response;
 
-      const responseInformation = {
-        statusCode,
-        statusMessage,
-        responseTime: `${Date.now() - now} ms`,
-      };
 
-      const log = { requestInformation, responseInformation };
-      try {
-        await this.postKafka.producerSendMessage(
-          this.logTopic,
-          JSON.stringify(log),
-        );
-        if (request?.url !== '/health') {
-          console.log(`${this.operationsTopic} topic send succesful`);
-          console.log(`${this.logTopic} topic send succesful`);
-        }
-      } catch (error) {
-        console.log(`${this.logTopic} topic cannot connected due to ` + error);
-      }
-      this.logger.log(`${JSON.stringify(log)}   `);
-    });
+
+    //temporary commented until mericuris problem gets solved
+    // response.on('close', async () => {
+    //   const { statusCode, statusMessage } = response;
+
+    //   const responseInformation = {
+    //     statusCode,
+    //     statusMessage,
+    //     responseTime: `${Date.now() - now} ms`,
+    //   };
+
+    //   const log = { requestInformation, responseInformation };
+    //   try {
+    //     await this.postKafka.producerSendMessage(
+    //       this.logTopic,
+    //       JSON.stringify(log),
+    //     );
+    //     if (request?.url !== '/health') {
+    //       console.log(`${this.operationsTopic} topic send succesful`);
+    //       console.log(`${this.logTopic} topic send succesful`);
+    //     }
+    //   } catch (error) {
+    //     console.log(`${this.logTopic} topic cannot connected due to ` + error);
+    //   }
+    //   this.logger.log(`${JSON.stringify(log)}   `);
+    // });
     if (query._id) {
       checkObjectIddİsValid(query._id);
     }
